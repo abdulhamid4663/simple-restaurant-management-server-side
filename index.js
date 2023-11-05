@@ -25,9 +25,15 @@ async function run() {
         await client.connect();
 
         const foodCollection = client.db('restaurantDB').collection('foods');
+        const categoryCollection = client.db('restaurantDB').collection('categories');
 
         app.get("/foods", async (req, res) => {
             const result = await foodCollection.find().toArray();
+            res.send(result);
+        })
+
+        app.get("/categories", async (req, res) => {
+            const result = await categoryCollection.find().toArray();
             res.send(result);
         })
 
