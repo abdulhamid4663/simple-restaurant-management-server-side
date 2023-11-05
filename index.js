@@ -1,6 +1,6 @@
 const express = require('express')
 const cors = require('cors');
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config()
 const app = express()
 const port = process.env.PORT || 5000
@@ -21,17 +21,18 @@ const client = new MongoClient(uri, {
 
 async function run() {
     try {
-        // Connect the client to the server	(optional starting in v4.7)
-        await client.connect();
+        // await client.connect();
 
+        // All Collections
         const foodCollection = client.db('restaurantDB').collection('foods');
         const categoryCollection = client.db('restaurantDB').collection('categories');
+        const userCollection = client.db('restaurantDB').collection('users');
 
+        // GET all Foods / query + price
         app.get("/foods", async (req, res) => {
-            
             let query = {};
 
-            if(req.query.category){
+            if (req.query.category) {
                 query.category = req.query.category
             }
 
@@ -39,16 +40,35 @@ async function run() {
             res.send(result);
         });
 
+        // GET a single food by id
+        app.get("/foods/:id", async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) }
+            const result = await foodCollection.findOne(query);
+            res.send(result);
+        })
+
+        // GET all Categories
         app.get("/categories", async (req, res) => {
             const result = await categoryCollection.find().toArray();
             res.send(result);
         })
 
-        // Send a ping to confirm a successful connection
+        // POST all Users
+        app.post("/users", async (req, res) => {
+            const user = req.body;
+            const result = await userCollection.insertOne(user)
+            res.send(result);
+        })
+
+
+
+
+
+
         await client.db("admin").command({ ping: 1 });
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
     } finally {
-        // Ensures that the client will close when you finish/error
         // await client.close();
     }
 }
