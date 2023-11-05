@@ -28,9 +28,16 @@ async function run() {
         const categoryCollection = client.db('restaurantDB').collection('categories');
 
         app.get("/foods", async (req, res) => {
-            const result = await foodCollection.find().toArray();
+            
+            let query = {};
+
+            if(req.query.category){
+                query.category = req.query.category
+            }
+
+            const result = await foodCollection.find(query).toArray();
             res.send(result);
-        })
+        });
 
         app.get("/categories", async (req, res) => {
             const result = await categoryCollection.find().toArray();
