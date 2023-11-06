@@ -1,11 +1,17 @@
 const express = require('express')
 const cors = require('cors');
+const jwt = require('jsonwebtoken');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config()
 const app = express()
 const port = process.env.PORT || 5000
 
-app.use(cors())
+app.use(cors({
+    origin: [
+        'http://localhost:5173'
+    ],
+    credentials: true,
+}))
 app.use(express.json());
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.xgaxesu.mongodb.net/?retryWrites=true&w=majority`;
@@ -19,6 +25,7 @@ const client = new MongoClient(uri, {
     }
 });
 
+
 async function run() {
     try {
         // await client.connect();
@@ -27,6 +34,14 @@ async function run() {
         const foodCollection = client.db('restaurantDB').collection('foods');
         const categoryCollection = client.db('restaurantDB').collection('categories');
         const userCollection = client.db('restaurantDB').collection('users');
+
+        // Auth
+        app.post("/jwt", async (req, res) => {
+            const user = req.body;
+            const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: "1h" });
+            res.send(token)
+        })
+
 
         // GET all Foods / query + price
         app.get("/foods", async (req, res) => {
