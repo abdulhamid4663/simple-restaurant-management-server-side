@@ -76,6 +76,12 @@ async function run() {
             res.send(result);
         })
 
+        // GET all Orders
+        app.get('/orders', async (req, res) => {
+            const result = await orderCollection.find().toArray();
+            res.send(result);
+        })
+
         // POST Orders
         app.post('/orders', async (req, res) => {
             const order = req.body;
