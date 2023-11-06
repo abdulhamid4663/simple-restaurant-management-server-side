@@ -68,14 +68,7 @@ async function run() {
             const result = await categoryCollection.find().toArray();
             res.send(result);
         })
-
-        // POST all Users
-        app.post("/users", async (req, res) => {
-            const user = req.body;
-            const result = await userCollection.insertOne(user)
-            res.send(result);
-        })
-
+  
         // GET all Orders
         app.get('/orders', async (req, res) => {
             const result = await orderCollection.find().toArray();
@@ -87,6 +80,20 @@ async function run() {
             const order = req.body;
             const result = await orderCollection.insertOne(order);
             res.send(result);
+        })
+        
+        // POST Users
+        app.post("/users", async (req, res) => {
+            const user = req.body;
+            const result = await userCollection.insertOne(user)
+            res.send(result);
+        })
+
+        // POST Foods
+        app.post("/foods", async (req, res) => {
+            const food = req.body;
+            const result = await foodCollection.insertOne(food);
+            res.send(result)
         })
 
 
