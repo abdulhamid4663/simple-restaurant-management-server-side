@@ -41,12 +41,12 @@ async function run() {
             const user = req.body;
             const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: "1h" });
             res.send(token)
-        })
+        });
 
         // GET all Foods / query + price
         app.get("/foods", async (req, res) => {
             let query = {};
-
+            
             if (req.query.category) {
                 query.category = req.query.category
             }
@@ -61,40 +61,48 @@ async function run() {
             const query = { _id: new ObjectId(id) }
             const result = await foodCollection.findOne(query);
             res.send(result);
-        })
+        });
 
         // GET all Categories
         app.get("/categories", async (req, res) => {
             const result = await categoryCollection.find().toArray();
             res.send(result);
-        })
-  
+        });
+
         // GET all Orders
         app.get('/orders', async (req, res) => {
             const result = await orderCollection.find().toArray();
             res.send(result);
-        })
+        });
 
         // POST Orders
         app.post('/orders', async (req, res) => {
             const order = req.body;
             const result = await orderCollection.insertOne(order);
             res.send(result);
-        })
-        
+        });
+
         // POST Users
         app.post("/users", async (req, res) => {
             const user = req.body;
             const result = await userCollection.insertOne(user)
             res.send(result);
-        })
+        });
 
         // POST Foods
         app.post("/foods", async (req, res) => {
             const food = req.body;
             const result = await foodCollection.insertOne(food);
-            res.send(result)
-        })
+            res.send(result);
+        });
+
+        // DELETE a single order by id
+        app.delete("/orders/:id", async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) };
+            const result = await orderCollection.deleteOne(query);
+            res.send(result);
+        });
 
 
 
