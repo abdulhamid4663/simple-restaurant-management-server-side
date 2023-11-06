@@ -46,9 +46,13 @@ async function run() {
         // GET all Foods / query + price
         app.get("/foods", async (req, res) => {
             let query = {};
-            
+
             if (req.query.category) {
                 query.category = req.query.category
+            }
+
+            if(req.query.user) {
+                query.madeBy = req.query.user
             }
 
             const result = await foodCollection.find(query).toArray();
