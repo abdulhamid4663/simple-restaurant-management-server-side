@@ -34,6 +34,7 @@ async function run() {
         const foodCollection = client.db('restaurantDB').collection('foods');
         const categoryCollection = client.db('restaurantDB').collection('categories');
         const userCollection = client.db('restaurantDB').collection('users');
+        const orderCollection = client.db('restaurantDB').collection('orders');
 
         // Auth
         app.post("/jwt", async (req, res) => {
@@ -41,7 +42,6 @@ async function run() {
             const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: "1h" });
             res.send(token)
         })
-
 
         // GET all Foods / query + price
         app.get("/foods", async (req, res) => {
@@ -73,6 +73,13 @@ async function run() {
         app.post("/users", async (req, res) => {
             const user = req.body;
             const result = await userCollection.insertOne(user)
+            res.send(result);
+        })
+
+        // POST Orders
+        app.post('/orders', async (req, res) => {
+            const order = req.body;
+            const result = await orderCollection.insertOne(order);
             res.send(result);
         })
 
