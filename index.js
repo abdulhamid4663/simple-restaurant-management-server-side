@@ -71,7 +71,7 @@ async function run() {
             let query = {};
             let sort = {};
 
-            const itemsPerPage = 9;            
+            const itemsPerPage = 9;
             const page = req.query.page;
 
             if (req.query.category) {
@@ -96,6 +96,7 @@ async function run() {
             res.send(result);
         });
 
+        // GET all foods for email checking system
         app.get("/allFoods", verifyToken, async (req, res) => {
             let query = {};
 
@@ -108,8 +109,15 @@ async function run() {
 
             const result = await foodCollection.find(query).toArray();
             res.send(result)
+        });
+
+        // GET all top foods 
+        app.get("/topFoods", async (req, res) => {
+            const result = await foodCollection.find({ count: { $gt: 0 } }).sort({ count: -1 }).limit(6).toArray();
+            res.send(result)
         })
 
+        // GET total food counts
         app.get("/foodsCount", async (req, res) => {
             const count = await foodCollection.estimatedDocumentCount();
             res.send({ count });
@@ -191,6 +199,7 @@ async function run() {
             res.send(result);
         });
 
+        // PATCH Update a single food by id
         app.patch("/foods/:id", async (req, res) => {
             const id = req.params.id;
             const field = req.body;
@@ -221,11 +230,6 @@ async function run() {
             const result = await foodCollection.deleteOne(query);
             res.send(result);
         });
-
-
-
-
-
 
         await client.db("admin").command({ ping: 1 });
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
