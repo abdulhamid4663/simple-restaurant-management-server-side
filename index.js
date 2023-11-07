@@ -189,6 +189,21 @@ async function run() {
 
             const result = await foodCollection.updateOne(filter, updateFood, options);
             res.send(result);
+        });
+
+        app.patch("/foods/:id", async (req, res) => {
+            const id = req.params.id;
+            const field = req.body;
+            const filter = { _id: new ObjectId(id) };
+
+            const updatedField = {
+                $set: {
+                    count: field.count
+                },
+            };
+
+            const result = await foodCollection.updateOne(filter, updatedField);
+            res.send(result)
         })
 
         // DELETE a single order by id
