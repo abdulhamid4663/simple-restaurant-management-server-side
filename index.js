@@ -70,9 +70,10 @@ async function run() {
         app.get("/foods", verifyToken, async (req, res) => {
             let query = {};
             let sort = {};
+            let find = {}
 
-            if(req.query.email && req.decoded.email){
-                if(req.query.email !== req.decoded.email) {
+            if (req.query.email && req.decoded.email) {
+                if (req.query.email !== req.decoded.email) {
                     return res.status(403).send({ message: "Forbidden Access", status: 403 });
                 }
                 query.madeBy = req.query.email;
@@ -82,13 +83,11 @@ async function run() {
                 query.category = req.query.category;
             }
 
-            if(req.query.search) {
-                query = {
-                    name: req.query.search
-                }
+            if (req.query.search) {
+                query.name = { $regex: new RegExp(req.query.search, "i") };
             }
 
-            if(req.query.filter) {
+            if (req.query.filter) {
                 sort.price = req.query.filter
             }
 
@@ -115,8 +114,8 @@ async function run() {
 
             let query = {};
 
-            if(req.query.email && req.decoded.email){
-                if(req.query.email !== req.decoded.email) {
+            if (req.query.email && req.decoded.email) {
+                if (req.query.email !== req.decoded.email) {
                     return res.status(403).send({ message: "Forbidden Access", status: 403 });
                 }
                 query.email = req.query.email
@@ -146,6 +145,31 @@ async function run() {
             const result = await foodCollection.insertOne(food);
             res.send(result);
         });
+
+        // PUT Update single food item by id
+        app.put("/foods/:id", async (req, res) => {
+            const id = req.params.id;
+            const food = req.body;
+            const filter = { _id: new ObjectId(id) };
+            const options = { upsert: true };
+
+            const updateFood = {
+                $set: {
+                    name: food.name,
+                    category: food.category,
+                    image: food.image,
+                    price: food.price,
+                    madeBy: food.madeBy,
+                    origin: food.origin,
+                    ingredients: food.ingredients,
+                    procedure: food.procedure,
+                    quantity: food.quantity,
+                }
+            };
+
+            const result = await foodCollection.updateOne(filter, updateFood, options);
+            res.send(result);
+        })
 
         // DELETE a single order by id
         app.delete("/orders/:id", async (req, res) => {
