@@ -67,19 +67,12 @@ async function run() {
         });
 
         // GET all Foods / query + price
-        app.get("/foods", verifyToken, async (req, res) => {
+        app.get("/foods", async (req, res) => {
             let query = {};
             let sort = {};
 
             const itemsPerPage = 9;            
             const page = req.query.page;
-
-            if (req.query.email && req.decoded.email) {
-                if (req.query.email !== req.decoded.email) {
-                    return res.status(403).send({ message: "Forbidden Access", status: 403 });
-                }
-                query.madeBy = req.query.email;
-            }
 
             if (req.query.category) {
                 query.category = req.query.category;
@@ -102,6 +95,20 @@ async function run() {
 
             res.send(result);
         });
+
+        app.get("/allFoods", verifyToken, async (req, res) => {
+            let query = {};
+
+            if (req.query.email && req.decoded.email) {
+                if (req.query.email !== req.decoded.email) {
+                    return res.status(403).send({ message: "Forbidden Access", status: 403 });
+                }
+                query.madeBy = req.query.email;
+            };
+
+            const result = await foodCollection.find(query).toArray();
+            res.send(result)
+        })
 
         app.get("/foodsCount", async (req, res) => {
             const count = await foodCollection.estimatedDocumentCount();
