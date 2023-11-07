@@ -14,7 +14,7 @@ app.use(cors({
     credentials: true,
 }))
 app.use(express.json());
-app.use(cookieParser())
+app.use(cookieParser());
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.xgaxesu.mongodb.net/?retryWrites=true&w=majority`;
 
@@ -70,7 +70,9 @@ async function run() {
         app.get("/foods", verifyToken, async (req, res) => {
             let query = {};
             let sort = {};
-            let find = {}
+
+            const itemsPerPage = 9;            
+            const page = req.query.page;
 
             if (req.query.email && req.decoded.email) {
                 if (req.query.email !== req.decoded.email) {
@@ -91,9 +93,20 @@ async function run() {
                 sort.price = req.query.filter
             }
 
-            const result = await foodCollection.find(query).sort(sort).toArray();
+            const result = await foodCollection
+                .find(query)
+                .sort(sort)
+                .skip(page * itemsPerPage)
+                .limit(itemsPerPage)
+                .toArray();
+
             res.send(result);
         });
+
+        app.get("/foodsCount", async (req, res) => {
+            const count = await foodCollection.estimatedDocumentCount();
+            res.send({ count });
+        })
 
         // GET a single food by id
         app.get("/foods/:id", async (req, res) => {
