@@ -1,6 +1,7 @@
 const express = require('express')
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
+const cookieParser = require('cookie-parser')
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config()
 const app = express()
@@ -13,6 +14,7 @@ app.use(cors({
     credentials: true,
 }))
 app.use(express.json());
+app.use(cookieParser())
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.xgaxesu.mongodb.net/?retryWrites=true&w=majority`;
 
@@ -25,6 +27,21 @@ const client = new MongoClient(uri, {
     }
 });
 
+
+const verifyToken = async (req, res, next) => {
+    const token = req.cookies?.token;
+    if (!token) {
+        return res.status(401).send({ message: "unAuthorized Access", status: 401 })
+    };
+    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
+        if (err) {
+            return res.status(401).send({ message: "unAuthorized Access", status: 401 });
+        }
+
+        req.decoded = decoded;
+        next();
+    });
+}
 
 async function run() {
     try {
@@ -40,22 +57,42 @@ async function run() {
         app.post("/jwt", async (req, res) => {
             const user = req.body;
             const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: "1h" });
-            res.send(token)
+            res
+                .cookie("token", token, {
+                    httpOnly: true,
+                    secure: true,
+                    sameSite: 'none',
+                })
+                .send({ success: true });
         });
 
         // GET all Foods / query + price
-        app.get("/foods", async (req, res) => {
+        app.get("/foods", verifyToken, async (req, res) => {
             let query = {};
+            let sort = {};
+
+            if(req.query.email && req.decoded.email){
+                if(req.query.email !== req.decoded.email) {
+                    return res.status(403).send({ message: "Forbidden Access", status: 403 });
+                }
+                query.madeBy = req.query.email;
+            }
 
             if (req.query.category) {
-                query.category = req.query.category
+                query.category = req.query.category;
             }
 
-            if(req.query.user) {
-                query.madeBy = req.query.user
+            if(req.query.search) {
+                query = {
+                    name: req.query.search
+                }
             }
 
-            const result = await foodCollection.find(query).toArray();
+            if(req.query.filter) {
+                sort.price = req.query.filter
+            }
+
+            const result = await foodCollection.find(query).sort(sort).toArray();
             res.send(result);
         });
 
@@ -74,8 +111,18 @@ async function run() {
         });
 
         // GET all Orders
-        app.get('/orders', async (req, res) => {
-            const result = await orderCollection.find().toArray();
+        app.get('/orders', verifyToken, async (req, res) => {
+
+            let query = {};
+
+            if(req.query.email && req.decoded.email){
+                if(req.query.email !== req.decoded.email) {
+                    return res.status(403).send({ message: "Forbidden Access", status: 403 });
+                }
+                query.email = req.query.email
+            }
+
+            const result = await orderCollection.find(query).toArray();
             res.send(result);
         });
 
