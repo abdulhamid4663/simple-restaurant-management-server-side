@@ -8,9 +8,7 @@ const app = express()
 const port = process.env.PORT || 5000
 
 app.use(cors({
-    origin: [
-        'http://localhost:5173'
-    ],
+    origin: 'http://localhost:5173',
     credentials: true,
 }))
 app.use(express.json());
@@ -100,12 +98,11 @@ async function run() {
         app.get("/allFoods", verifyToken, async (req, res) => {
             let query = {};
 
-            if (req.query.email && req.decoded.email) {
-                if (req.query.email !== req.decoded.email) {
-                    return res.status(403).send({ message: "Forbidden Access", status: 403 });
-                }
-                query.madeBy = req.query.email;
-            };
+            if (req.query.email !== req.decoded.email) {
+                return res.status(403).send({ message: "Forbidden Access", status: 403 });
+            }
+            query.madeBy = req.query.email;
+
 
             const result = await foodCollection.find(query).toArray();
             res.send(result)
@@ -144,6 +141,7 @@ async function run() {
 
             if (req.query.email && req.decoded.email) {
                 if (req.query.email !== req.decoded.email) {
+                    console.log(req.query.email, req.decoded.email);
                     return res.status(403).send({ message: "Forbidden Access", status: 403 });
                 }
                 query.email = req.query.email
