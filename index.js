@@ -154,6 +154,12 @@ async function run() {
             res.send(result);
         });
 
+        // GET all users
+        app.get("/users", async (req, res) => {
+            const result = await userCollection.find().toArray();
+            res.send(result);
+        })
+
         // POST Orders
         app.post('/orders', async (req, res) => {
             const order = req.body;
