@@ -8,7 +8,10 @@ const app = express()
 const port = process.env.PORT || 5000
 
 app.use(cors({
-    origin: 'http://localhost:5173',
+    origin: [
+        'https://amal-auth-b8696.web.app',
+        'https://amal-auth-b8696.firebaseapp.com'
+    ],
     credentials: true,
 }))
 app.use(express.json());
